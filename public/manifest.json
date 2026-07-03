@@ -1,0 +1,55 @@
+{
+  "id": "/",
+  "name": "Physical Climb - Elite Physical Training",
+  "short_name": "Physical Climb",
+  "description": "Offline-first physical training console for Scott's strength, cardio, recovery, and supplement workflow.",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#08111f",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/screenshots/dashboard-mobile.png",
+      "sizes": "860x1864",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Daily dashboard with training, supplements, and recovery"
+    },
+    {
+      "src": "/screenshots/week-mobile.png",
+      "sizes": "860x1864",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Weekly training flow with daily cards"
+    },
+    {
+      "src": "/screenshots/dashboard-wide.png",
+      "sizes": "2880x2400",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Wide dashboard view for tablet and desktop installs"
+    }
+  ],
+  "categories": ["health", "fitness", "productivity"]
+}
