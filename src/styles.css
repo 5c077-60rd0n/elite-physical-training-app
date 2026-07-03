@@ -27,6 +27,53 @@
   color: var(--text);
 }
 
+html.native-ios,
+html.native-ios body {
+  background: var(--bg);
+}
+
+html.native-ios .sticky-header,
+html.native-ios .hero-panel,
+html.native-ios .panel,
+html.native-ios .week-grid,
+html.native-ios .tracker-panel,
+html.native-ios .tab-bar,
+html.native-ios .bottom-nav,
+html.native-ios .pwa-toast {
+  backdrop-filter: none;
+}
+
+html.native-ios .hero-panel,
+html.native-ios .panel,
+html.native-ios .week-grid,
+html.native-ios .tracker-panel,
+html.native-ios .pwa-toast,
+html.native-ios .reward-toast {
+  box-shadow: none;
+}
+
+html.native-ios .console-logo,
+html.native-ios .brand-icon {
+  filter: none;
+}
+
+html.native-ios .hero-panel::after,
+html.native-ios .hero-panel::before {
+  display: none;
+}
+
+html.native-ios .stat-card,
+html.native-ios .summary-box,
+html.native-ios .exercise-card,
+html.native-ios .week-card,
+html.native-ios .recovery-card,
+html.native-ios .supplement-card,
+html.native-ios .meta-pill,
+html.native-ios .bottom-nav-link.active,
+html.native-ios .week-card.selected {
+  box-shadow: none;
+}
+
 * {
   box-sizing: border-box;
 }

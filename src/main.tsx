@@ -1,7 +1,12 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import { Capacitor } from '@capacitor/core';
 import App from './App';
 import './styles.css';
+
+if (Capacitor.isNativePlatform() && Capacitor.getPlatform() === 'ios') {
+  document.documentElement.classList.add('native-ios');
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
