@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Dashboard } from '../components/Dashboard';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { ProgressPanel } from '../components/ProgressPanel';
+import { getExerciseImageUrl } from '../lib/exerciseImages';
 import { getSessionRewardPreview } from '../lib/gamification';
 import { buildProgramSnapshot } from '../lib/program';
 import { triggerRewardCue } from '../lib/rewardEffects';
@@ -239,6 +240,7 @@ export function TodaySessionScreen({ day, entry, progress, profile, bodyMetrics,
           <div className="workout-lane-list" role="list" aria-label="Workout sequence">
             {strengthSession.exercises.map((exercise, index) => {
               const log = progressEntry.exerciseLogs[exercise.id];
+              const exerciseImage = getExerciseImageUrl(exercise.exercise, exercise.pattern);
               const programmedSets = parseNumericTarget(exercise.sets);
               const programmedReps = parseNumericTarget(exercise.reps);
               const completedSets = log?.setsCompleted ?? 0;
@@ -257,7 +259,9 @@ export function TodaySessionScreen({ day, entry, progress, profile, bodyMetrics,
                   onClick={() => setActiveExerciseId(exercise.id)}
                 >
                   <div className="workout-lane-rail" aria-hidden="true">
-                    <div className="workout-lane-thumb">{index + 1}</div>
+                    <div className="workout-lane-thumb">
+                      {exerciseImage ? <img src={exerciseImage} alt={exercise.exercise} className="workout-lane-thumb-image" /> : <span>{index + 1}</span>}
+                    </div>
                     <div className="workout-lane-pattern">{getPatternBadge(exercise.pattern)}</div>
                     {index < strengthSession.exercises.length - 1 ? <span className="workout-lane-line" /> : null}
                   </div>
@@ -300,6 +304,7 @@ export function TodaySessionScreen({ day, entry, progress, profile, bodyMetrics,
           <div className="exercise-list">
             {strengthSession.exercises.map((exercise) => {
               const log = progressEntry.exerciseLogs[exercise.id];
+              const exerciseImage = getExerciseImageUrl(exercise.exercise, exercise.pattern);
               const previousLog = findPreviousLog(exercise.exercise, day.dateIso, progress);
               const programmedSets = parseProgrammedValue(exercise.sets);
               const programmedReps = parseProgrammedValue(exercise.reps);
@@ -309,6 +314,7 @@ export function TodaySessionScreen({ day, entry, progress, profile, bodyMetrics,
                 <article className="exercise-card" key={`log-${exercise.id}`}>
                   <span className="card-kicker">{exercise.pattern}</span>
                   <h3 className="exercise-name">{exercise.exercise}</h3>
+                  {exerciseImage ? <img src={exerciseImage} alt={`${exercise.exercise} demo`} className="exercise-upload-thumb" /> : null}
                   <p className="exercise-note">Target: {exercise.sets} x {exercise.reps}</p>
                   <div className="metric-grid">
                     <div>
