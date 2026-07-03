@@ -1,5 +1,7 @@
 name: Vercel Deploy
 
+run-name: Vercel Deploy (${{ github.event_name }})
+
 on:
   workflow_dispatch:
   pull_request:
