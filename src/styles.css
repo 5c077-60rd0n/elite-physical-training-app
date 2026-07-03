@@ -533,6 +533,29 @@ h1 {
   font-size: 0.9rem;
 }
 
+.compact-actions-row {
+  align-items: center;
+}
+
+.rest-timer-box {
+  margin-top: 14px;
+}
+
+.rest-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 40px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(34, 183, 240, 0.24);
+  background: rgba(8, 26, 40, 0.54);
+  color: var(--cyan-soft);
+  font-family: var(--font-display);
+  font-size: 0.86rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 .danger-action {
   border-color: rgba(239, 68, 68, 0.28);
   color: #fca5a5;

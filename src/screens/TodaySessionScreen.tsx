@@ -67,7 +67,7 @@ export function TodaySessionScreen({ day, entry, profile, bodyMetrics, healthMet
       ) : null}
 
       <section className="content-stack">
-        <Dashboard day={day} progress={progressEntry} />
+        <Dashboard day={day} progress={progressEntry} enableRestTimer />
         <aside className="tracker-panel">
           <header className="tracker-header">
             <div>

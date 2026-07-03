@@ -1,12 +1,75 @@
+import { useEffect, useMemo, useState } from 'react';
 import { formatFullDate } from '../lib/date';
 import type { DayPlan, ProgressEntry } from '../types';
 
 interface DashboardProps {
   day: DayPlan;
   progress: ProgressEntry;
+  enableRestTimer?: boolean;
 }
 
-export function Dashboard({ day, progress }: DashboardProps) {
+function parseRestSeconds(rest: string) {
+  const match = rest.match(/(\d+)/);
+  if (!match) {
+    return null;
+  }
+
+  const value = Number(match[1]);
+  if (!Number.isFinite(value)) {
+    return null;
+  }
+
+  return /min/i.test(rest) ? value * 60 : value;
+}
+
+function formatCountdown(totalSeconds: number) {
+  const minutes = Math.floor(totalSeconds / 60);
+  const seconds = totalSeconds % 60;
+  return `${minutes}:${String(seconds).padStart(2, '0')}`;
+}
+
+export function Dashboard({ day, progress, enableRestTimer = false }: DashboardProps) {
+  const [activeRestExerciseId, setActiveRestExerciseId] = useState<string | null>(null);
+  const [restSecondsRemaining, setRestSecondsRemaining] = useState(0);
+
+  useEffect(() => {
+    if (!activeRestExerciseId || restSecondsRemaining <= 0) {
+      return undefined;
+    }
+
+    const timer = window.setInterval(() => {
+      setRestSecondsRemaining((current) => {
+        if (current <= 1) {
+          window.clearInterval(timer);
+          return 0;
+        }
+        return current - 1;
+      });
+    }, 1000);
+
+    return () => window.clearInterval(timer);
+  }, [activeRestExerciseId, restSecondsRemaining]);
+
+  const activeRestExercise = useMemo(
+    () => (day.session.kind === 'strength' ? day.session.exercises.find((exercise) => exercise.id === activeRestExerciseId) ?? null : null),
+    [activeRestExerciseId, day.session],
+  );
+
+  function startRestTimer(exerciseId: string, rest: string) {
+    const seconds = parseRestSeconds(rest);
+    if (!seconds) {
+      return;
+    }
+
+    setActiveRestExerciseId(exerciseId);
+    setRestSecondsRemaining(seconds);
+  }
+
+  function clearRestTimer() {
+    setActiveRestExerciseId(null);
+    setRestSecondsRemaining(0);
+  }
+
   return (
     <section className="panel">
       <header className="panel-header">
@@ -42,6 +105,32 @@ export function Dashboard({ day, progress }: DashboardProps) {
         </article>
       </div>
 
+      {enableRestTimer && day.session.kind === 'strength' ? (
+        <section className="summary-box rest-timer-box" aria-live="polite">
+          <span className="card-kicker">Rest timer</span>
+          <strong>
+            {activeRestExercise && restSecondsRemaining > 0
+              ? `${formatCountdown(restSecondsRemaining)} · ${activeRestExercise.exercise}`
+              : 'Ready when you are'}
+          </strong>
+          <p className="exercise-note">
+            {activeRestExercise && restSecondsRemaining > 0
+              ? `Auto-loaded from ${activeRestExercise.rest}. Reset or start another exercise to switch timers.`
+              : 'Tap Start rest on any exercise to launch the programmed countdown.'}
+          </p>
+          {activeRestExercise && restSecondsRemaining > 0 ? (
+            <div className="card-actions compact-actions-row">
+              <button className="secondary-action compact-action" type="button" onClick={() => startRestTimer(activeRestExercise.id, activeRestExercise.rest)}>
+                Restart
+              </button>
+              <button className="secondary-action compact-action" type="button" onClick={clearRestTimer}>
+                Clear
+              </button>
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+
       {day.session.kind === 'strength' ? (
         <section className="exercise-list">
           {day.session.exercises.map((exercise) => (
@@ -64,6 +153,16 @@ export function Dashboard({ day, progress }: DashboardProps) {
                 </div>
               </div>
               <p className="list-caption">Equipment: {exercise.equipment.join(', ')}</p>
+              {enableRestTimer ? (
+                <div className="card-actions compact-actions-row">
+                  <button className="secondary-action compact-action" type="button" onClick={() => startRestTimer(exercise.id, exercise.rest)}>
+                    Start rest
+                  </button>
+                  {activeRestExerciseId === exercise.id && restSecondsRemaining > 0 ? (
+                    <span className="rest-chip">{formatCountdown(restSecondsRemaining)}</span>
+                  ) : null}
+                </div>
+              ) : null}
             </article>
           ))}
         </section>
