@@ -12,19 +12,23 @@ const navItems = [
 export function BottomNav() {
   return (
     <nav className="bottom-nav" aria-label="Primary">
-      {navItems.map((item) => {
-        const Icon = item.icon;
-        return (
-          <NavLink
-            key={item.to}
-            to={item.to}
-            className={({ isActive }) => (isActive ? 'bottom-nav-link active' : 'bottom-nav-link')}
-          >
-            <Icon size={20} />
-            <span>{item.label}</span>
-          </NavLink>
-        );
-      })}
+      <ul className="bottom-nav-list">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <li key={item.to}>
+              <NavLink
+                to={item.to}
+                aria-label={item.label}
+                className={({ isActive }) => (isActive ? 'bottom-nav-link active' : 'bottom-nav-link')}
+              >
+                <Icon size={16} />
+                <span>{item.label}</span>
+              </NavLink>
+            </li>
+          );
+        })}
+      </ul>
     </nav>
   );
 }

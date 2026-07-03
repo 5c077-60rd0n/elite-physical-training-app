@@ -4,11 +4,12 @@ interface PageWrapperProps extends PropsWithChildren {
   title: string;
   eyebrow?: string;
   description?: string;
+  className?: string;
 }
 
-export function PageWrapper({ title, eyebrow, description, children }: PageWrapperProps) {
+export function PageWrapper({ title, eyebrow, description, className, children }: PageWrapperProps) {
   return (
-    <section className="page-shell">
+    <section className={className ? `page-shell ${className}` : 'page-shell'}>
       <header className="page-header">
         {eyebrow ? <p className="eyebrow">{eyebrow}</p> : null}
         <h1 className="page-title">{title}</h1>

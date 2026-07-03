@@ -17,12 +17,12 @@ export function Header({ progress }: HeaderProps) {
       </div>
 
       <div className="console-pills" aria-label="App status">
-        <span className="console-pill console-pill-gold">
-          <Flame size={16} />
+        <span className="console-pill console-pill-gold" aria-label="training streak">
+          <Flame size={12} />
           {streak}D
         </span>
-        <span className="console-pill console-pill-cyan">
-          <Circle size={14} fill="currentColor" />
+        <span className="console-pill console-pill-cyan" aria-label="sync status">
+          <Circle size={12} fill="currentColor" />
           Synced
         </span>
       </div>

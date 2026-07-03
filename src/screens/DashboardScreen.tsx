@@ -20,6 +20,11 @@ interface DashboardScreenProps {
 
 export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, photoCheckIns, healthMetrics }: DashboardScreenProps) {
   const snapshot = buildProgramSnapshot(profile, day, bodyMetrics);
+  const compactWeeklyTargets = [
+    'Protect performance on the first two lifts.',
+    'Complete 1 full Zone 2 session this week.',
+    'Hit protein, sleep, and recovery on 5+ days.',
+  ];
   const completion = getCompletionRate(plan, progress);
   const science = getSciencePrinciples()[0];
   const blockComparisons = getBlockAverageComparisons(bodyMetrics);
@@ -49,17 +54,22 @@ export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, pho
 
   return (
     <PageWrapper
-      title={`Welcome back, ${profile.name}`}
+      title="Dashboard"
       eyebrow="Home"
-      description={`${snapshot.phase.name} · Week ${snapshot.week} · ${snapshot.weeklyFocus.theme}`}
+      description={`${profile.name} · ${snapshot.phase.name} · Week ${snapshot.week}`}
+      className="dashboard-shell"
     >
       <section className="content-stack home-grid">
         <section className="panel hero-panel compact-hero">
           <div className="hero-grid">
             <div className="hero-copy-block">
-              <p className="eyebrow">This week&apos;s focus</p>
-              <h2 className="page-title">{snapshot.weeklyFocus.weeklyFocus}</h2>
-              <p className="hero-copy">Primary objective: burn fat, preserve muscle, and keep strength performance steady while recovery stays intact.</p>
+              <p className="eyebrow">Week {snapshot.week} of 16</p>
+              <h2 className="section-title">{snapshot.phase.name}</h2>
+              <p className="hero-copy">{snapshot.weeklyFocus.theme}</p>
+              <div className="cta-grid">
+                <Link className="action-link action-link-primary" to="/today">Start today</Link>
+                <Link className="action-link" to="/schedule">Open week view</Link>
+              </div>
             </div>
             <div className="hero-stats">
               <article className="stat-card accent-blue">
@@ -86,19 +96,15 @@ export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, pho
             </div>
           </header>
           <ul className="detail-list">
-            {snapshot.weeklyTargets.map((item) => (
+            {compactWeeklyTargets.map((item) => (
               <li key={item}>{item}</li>
             ))}
           </ul>
-          <div className="cta-grid">
-            <Link className="action-link action-link-primary" to="/today">Start today</Link>
-            <Link className="action-link" to="/schedule">Open week view</Link>
-          </div>
           {snapshot.nutritionTargets ? (
             <div className="summary-box nutrition-box">
               <span className="card-kicker">Today&apos;s nutrition target</span>
               <strong>{snapshot.nutritionTargets.calories} · {snapshot.nutritionTargets.proteinGrams}</strong>
-              <p className="panel-subtitle">{snapshot.nutritionTargets.rationale}</p>
+              <p className="panel-subtitle">Keep the deficit controlled so training output stays stable.</p>
             </div>
           ) : null}
         </section>

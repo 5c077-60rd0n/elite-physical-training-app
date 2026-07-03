@@ -20,10 +20,38 @@ interface SettingsScreenProps {
 
 export function SettingsScreen({ profile, onChange, healthSyncStatus }: SettingsScreenProps) {
   const [notificationStatus, setNotificationStatus] = useState<NativeNotificationStatus | null>(null);
+  const [ageInput, setAgeInput] = useState(String(profile.age));
+  const [heightInput, setHeightInput] = useState(String(profile.heightInches));
 
   useEffect(() => {
     void getNativeNotificationStatus().then(setNotificationStatus);
   }, [profile.dailyReminderTime, profile.reminderEnabled]);
+
+  useEffect(() => {
+    setAgeInput(String(profile.age));
+  }, [profile.age]);
+
+  useEffect(() => {
+    setHeightInput(String(profile.heightInches));
+  }, [profile.heightInches]);
+
+  function handleWholeNumberInput(
+    nextValue: string,
+    assign: (value: number) => void,
+    setInput: (value: string) => void,
+  ) {
+    if (nextValue === '') {
+      setInput('');
+      return;
+    }
+
+    if (!/^\d+$/.test(nextValue)) {
+      return;
+    }
+
+    setInput(nextValue);
+    assign(Number(nextValue));
+  }
 
   return (
     <PageWrapper title="Settings" eyebrow="More" description="Adjust reminder timing and baseline program data.">
@@ -41,11 +69,27 @@ export function SettingsScreen({ profile, onChange, healthSyncStatus }: Settings
           </div>
           <div>
             <label className="field-label" htmlFor="settings-age">Age</label>
-            <input id="settings-age" className="select-input" type="number" value={profile.age} onChange={(event) => onChange({ ...profile, age: Number(event.target.value) || profile.age })} />
+            <input
+              id="settings-age"
+              className="select-input"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={ageInput}
+              onChange={(event) => handleWholeNumberInput(event.target.value, (value) => onChange({ ...profile, age: value }), setAgeInput)}
+            />
           </div>
           <div>
             <label className="field-label" htmlFor="settings-height">Height (in)</label>
-            <input id="settings-height" className="select-input" type="number" value={profile.heightInches} onChange={(event) => onChange({ ...profile, heightInches: Number(event.target.value) || profile.heightInches })} />
+            <input
+              id="settings-height"
+              className="select-input"
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              value={heightInput}
+              onChange={(event) => handleWholeNumberInput(event.target.value, (value) => onChange({ ...profile, heightInches: value }), setHeightInput)}
+            />
           </div>
         </div>
 

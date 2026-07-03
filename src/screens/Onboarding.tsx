@@ -13,8 +13,28 @@ export function Onboarding({ profile, onComplete }: OnboardingProps) {
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [draft, setDraft] = useState(profile);
+  const [ageInput, setAgeInput] = useState(String(profile.age));
+  const [heightInput, setHeightInput] = useState(String(profile.heightInches));
   const previewWeek = useMemo(() => getCurrentWeek({ ...draft, onboardingComplete: true }), [draft]);
   const previewPhase = useMemo(() => getCurrentPhase(previewWeek), [previewWeek]);
+
+  function handleWholeNumberInput(
+    nextValue: string,
+    assign: (value: number) => void,
+    setInput: (value: string) => void,
+  ) {
+    if (nextValue === '') {
+      setInput('');
+      return;
+    }
+
+    if (!/^\d+$/.test(nextValue)) {
+      return;
+    }
+
+    setInput(nextValue);
+    assign(Number(nextValue));
+  }
 
   function finish() {
     onComplete({ ...draft, onboardingComplete: true });
@@ -63,11 +83,27 @@ export function Onboarding({ profile, onComplete }: OnboardingProps) {
             <div className="metric-grid">
               <div>
                 <label className="field-label" htmlFor="age">Age</label>
-                <input id="age" className="select-input" type="number" value={draft.age} onChange={(event) => setDraft((current) => ({ ...current, age: Number(event.target.value) || current.age }))} />
+                <input
+                  id="age"
+                  className="select-input"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={ageInput}
+                  onChange={(event) => handleWholeNumberInput(event.target.value, (value) => setDraft((current) => ({ ...current, age: value })), setAgeInput)}
+                />
               </div>
               <div>
                 <label className="field-label" htmlFor="height">Height (in)</label>
-                <input id="height" className="select-input" type="number" value={draft.heightInches} onChange={(event) => setDraft((current) => ({ ...current, heightInches: Number(event.target.value) || current.heightInches }))} />
+                <input
+                  id="height"
+                  className="select-input"
+                  type="text"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  value={heightInput}
+                  onChange={(event) => handleWholeNumberInput(event.target.value, (value) => setDraft((current) => ({ ...current, heightInches: value })), setHeightInput)}
+                />
               </div>
               <div>
                 <label className="field-label" htmlFor="activity">Activity</label>
