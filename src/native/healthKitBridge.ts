@@ -24,20 +24,47 @@ interface NativeHealthKitBridgePlugin {
   readDailySummaries(options: { startDate: string; endDate: string }): Promise<{ entries: HealthKitDailySummary[] }>;
 }
 
-const NativeHealthKitBridge = registerPlugin<NativeHealthKitBridgePlugin>('PhysicalClimbHealthKitBridge');
+const NativeHealthKitBridgeByJsName = registerPlugin<NativeHealthKitBridgePlugin>('PhysicalClimbHealthKitBridge');
+const NativeHealthKitBridgeByIdentifier = registerPlugin<NativeHealthKitBridgePlugin>('PhysicalClimbHealthKitPlugin');
+
+function isNotImplementedError(error: unknown) {
+  if (!(error instanceof Error)) {
+    return false;
+  }
+
+  const message = error.message.toLowerCase();
+  return message.includes('not implemented') || message.includes('unimplemented') || message.includes('plugin is not implemented');
+}
+
+async function callBridgeWithFallback<T>(
+  invoke: (plugin: NativeHealthKitBridgePlugin) => Promise<T>,
+): Promise<T> {
+  try {
+    return await invoke(NativeHealthKitBridgeByJsName);
+  } catch (error) {
+    if (!isNotImplementedError(error)) {
+      throw error;
+    }
+    return invoke(NativeHealthKitBridgeByIdentifier);
+  }
+}
 
 class CapacitorHealthKitBridge implements HealthKitBridge {
   async isNativeAvailable() {
-    const result = await NativeHealthKitBridge.isNativeAvailable();
-    return result.available;
+    try {
+      const result = await callBridgeWithFallback((plugin) => plugin.isNativeAvailable());
+      return result.available;
+    } catch {
+      return false;
+    }
   }
 
   async requestHealthPermissions() {
-    return NativeHealthKitBridge.requestHealthPermissions();
+    return callBridgeWithFallback((plugin) => plugin.requestHealthPermissions());
   }
 
   async readDailySummaries(startDate: string, endDate: string) {
-    const result = await NativeHealthKitBridge.readDailySummaries({ startDate, endDate });
+    const result = await callBridgeWithFallback((plugin) => plugin.readDailySummaries({ startDate, endDate }));
     return result.entries;
   }
 }
