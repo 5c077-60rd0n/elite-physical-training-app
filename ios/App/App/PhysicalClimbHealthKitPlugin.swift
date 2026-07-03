@@ -26,7 +26,7 @@ public class PhysicalClimbHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         return value == HKCategoryValueSleepAnalysis.asleep.rawValue
     }
 
-    @objc func isNativeAvailable(_ call: CAPPluginCall) {
+    @objc public func isNativeAvailable(_ call: CAPPluginCall) {
         call.resolve(["available": HKHealthStore.isHealthDataAvailable()])
     }
 
@@ -62,7 +62,7 @@ public class PhysicalClimbHealthKitPlugin: CAPPlugin, CAPBridgedPlugin {
         }
     }
 
-    @objc func readDailySummaries(_ call: CAPPluginCall) {
+    @objc public func readDailySummaries(_ call: CAPPluginCall) {
         guard HKHealthStore.isHealthDataAvailable() else {
             call.resolve(["entries": []])
             return

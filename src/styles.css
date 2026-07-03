@@ -32,6 +32,24 @@ html.native-ios body {
   background: var(--bg);
 }
 
+html.native-ios {
+  --bg-elevated: rgba(8, 14, 22, 0.98);
+  --bg-card: rgba(8, 14, 22, 0.98);
+  --shadow: none;
+}
+
+html.native-ios body {
+  background: #060b12;
+}
+
+html.native-ios *,
+html.native-ios *::before,
+html.native-ios *::after {
+  animation: none !important;
+  transition: none !important;
+  text-shadow: none !important;
+}
+
 html.native-ios .sticky-header,
 html.native-ios .hero-panel,
 html.native-ios .panel,
@@ -41,6 +59,11 @@ html.native-ios .tab-bar,
 html.native-ios .bottom-nav,
 html.native-ios .pwa-toast {
   backdrop-filter: none;
+}
+
+html.native-ios .sticky-header,
+html.native-ios .bottom-nav {
+  background: rgba(5, 10, 16, 0.98);
 }
 
 html.native-ios .hero-panel,
@@ -60,6 +83,14 @@ html.native-ios .brand-icon {
 html.native-ios .hero-panel::after,
 html.native-ios .hero-panel::before {
   display: none;
+}
+
+html.native-ios .tab-button.active,
+html.native-ios .action-link-primary,
+html.native-ios .install-button,
+html.native-ios .xp-bar span,
+html.native-ios .hero-rule {
+  background: rgba(34, 183, 240, 0.2);
 }
 
 html.native-ios .stat-card,
