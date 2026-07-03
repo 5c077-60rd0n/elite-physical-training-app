@@ -1156,20 +1156,18 @@ h1 {
 }
 
 @media (max-width: 719px) {
-  .console-bar,
-  .console-brand,
-  .console-pills {
-    flex-direction: column;
-    align-items: flex-start;
+  .console-bar {
+    align-items: center;
   }
 
-  .console-logo {
-    width: 82px;
+  .console-brand,
+  .console-pills {
+    flex-direction: row;
+    align-items: center;
   }
 
   .console-label {
-    font-size: 0.68rem;
-    letter-spacing: 0.16em;
+    display: none;
   }
 
   .panel,
@@ -1210,6 +1208,16 @@ h1 {
   .bottom-nav-link {
     min-height: 42px;
     font-size: 0.68rem;
+  }
+
+  .console-pills {
+    gap: 6px;
+  }
+
+  .console-pill {
+    min-height: 26px;
+    padding: 4px 7px;
+    font-size: 0.66rem;
   }
 
   .onboarding-actions,
