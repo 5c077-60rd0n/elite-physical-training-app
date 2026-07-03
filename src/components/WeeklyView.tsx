@@ -33,8 +33,10 @@ export function WeeklyView({ plan, progress, selectedDate, onSelect, compact = f
 
           return (
             <button
+              type="button"
               key={day.dateIso}
               className={isSelected ? 'week-card selected' : 'week-card'}
+              aria-pressed={isSelected}
               onClick={() => onSelect(day.dateIso)}
             >
               <div className="week-card-header">
@@ -43,7 +45,7 @@ export function WeeklyView({ plan, progress, selectedDate, onSelect, compact = f
                   <h3>{day.dayName}</h3>
                 </div>
                 <span className={entry?.sessionComplete ? 'status-pill complete' : 'status-pill'}>
-                  {entry?.sessionComplete ? 'Done' : 'Open'}
+                  {entry?.sessionComplete ? 'Done' : isSelected ? 'Viewing' : 'Open'}
                 </span>
               </div>
               <p className="week-summary">{day.sessionLabel}</p>
