@@ -132,6 +132,7 @@ export interface BodyMetricEntry {
   date: string;
   weightLbs: number;
   waistInches: number;
+  bodyFatPercent?: number;
   note: string;
 }
 
@@ -142,16 +143,6 @@ export interface PhotoCheckIn {
   imageDataUrl: string;
   note: string;
   view?: PhotoCheckInView;
-}
-
-export interface HealthMetricEntry {
-  date: string;
-  steps: number;
-  weightLbs?: number;
-  activeEnergyKcal?: number;
-  restingHeartRate?: number;
-  sleepHours?: number;
-  source: 'apple-health-import';
 }
 
 export interface NutritionTargets {
@@ -217,6 +208,16 @@ export interface ProgressEntry {
   recoveryComplete: boolean;
   rpe: number;
   notes: string;
+  exerciseLogs: Record<string, ExercisePerformanceLog>;
+}
+
+export interface ExercisePerformanceLog {
+  exerciseName: string;
+  setsCompleted: number;
+  repsCompleted: number;
+  loadLbs: number;
+  formScore: number;
+  note: string;
 }
 
 export type ProgressMap = Record<string, ProgressEntry>;

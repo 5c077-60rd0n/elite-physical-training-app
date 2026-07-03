@@ -1,7 +1,5 @@
 import { getTrainingStreak } from './analytics';
-import { getWeeklyRecoverySummary } from './health';
-import { getReadinessScore } from './health';
-import type { BodyMetricEntry, DayPlan, GamificationSnapshot, HealthMetricEntry, PhotoCheckIn, ProgressMap, QuestProgress } from '../types';
+import type { BodyMetricEntry, DayPlan, GamificationSnapshot, PhotoCheckIn, ProgressMap, QuestProgress } from '../types';
 
 const DAY_MS = 24 * 60 * 60 * 1000;
 const SEASON_DAYS = 28;
@@ -76,7 +74,6 @@ function computeWeeklyQuests(
   plan: DayPlan[],
   bodyMetrics: BodyMetricEntry[],
   photoCheckIns: PhotoCheckIn[],
-  healthMetrics: HealthMetricEntry[],
 ): QuestProgress[] {
   const sessionCount = weeklyDates.filter((date) => progress[date]?.sessionComplete).length;
   const recoveryCount = weeklyDates.filter((date) => progress[date]?.recoveryComplete).length;
@@ -87,15 +84,9 @@ function computeWeeklyQuests(
   }).length;
   const metricCount = bodyMetrics.filter((entry) => weeklyDates.includes(entry.date)).length;
   const photoCount = photoCheckIns.filter((entry) => weeklyDates.includes(entry.date)).length;
-  const stepDays = healthMetrics.filter((entry) => weeklyDates.includes(entry.date) && entry.steps >= 8000).length;
-  const recoverySummary = getWeeklyRecoverySummary(healthMetrics, weeklyDates);
-  const readinessDays = weeklyDates
-    .map((date) => getReadinessScore(healthMetrics, date))
-    .filter((entry): entry is NonNullable<ReturnType<typeof getReadinessScore>> => entry !== null);
-  const goodReadinessDays = readinessDays.filter((entry) => entry.band !== 'red').length;
-  const avgReadinessScore = readinessDays.length
-    ? readinessDays.reduce((sum, entry) => sum + entry.score, 0) / readinessDays.length
-    : 0;
+  const allExerciseLogs = weeklyDates.flatMap((date) => Object.values(progress[date]?.exerciseLogs ?? {}));
+  const highQualityFormLogs = allExerciseLogs.filter((log) => log.formScore >= 4).length;
+  const progressionLogs = allExerciseLogs.filter((log) => log.loadLbs > 0 && log.repsCompleted > 0).length;
 
   return [
     {
@@ -139,36 +130,20 @@ function computeWeeklyQuests(
       completed: sessionCount >= 5,
     },
     {
-      id: 'steps-4',
-      name: 'Move The Needle',
-      description: 'Hit 8,000+ steps on 4 days this week',
-      progress: stepDays,
-      target: 4,
-      completed: stepDays >= 4,
+      id: 'form-focus-8',
+      name: 'Form First',
+      description: 'Log 8 high-quality sets (form score 4+)',
+      progress: highQualityFormLogs,
+      target: 8,
+      completed: highQualityFormLogs >= 8,
     },
     {
-      id: 'recovery-green-4',
-      name: 'Recovery Reader',
-      description: 'Log 4 green or amber readiness days this week',
-      progress: recoverySummary.greenDays + recoverySummary.amberDays,
-      target: 4,
-      completed: recoverySummary.greenDays + recoverySummary.amberDays >= 4,
-    },
-    {
-      id: 'readiness-avg-70',
-      name: 'Readiness Manager',
-      description: 'Average readiness score of 70+ across tracked days this week',
-      progress: Math.round(avgReadinessScore),
-      target: 70,
-      completed: avgReadinessScore >= 70,
-    },
-    {
-      id: 'no-red-5',
-      name: 'Fatigue Governor',
-      description: 'Stack 5 days this week outside the red readiness zone',
-      progress: goodReadinessDays,
-      target: 5,
-      completed: goodReadinessDays >= 5,
+      id: 'progression-10',
+      name: 'Progression Pilot',
+      description: 'Log 10 set-rep-load entries this week',
+      progress: progressionLogs,
+      target: 10,
+      completed: progressionLogs >= 10,
     },
   ];
 }
@@ -178,7 +153,6 @@ export function getGamificationSnapshot(
   progress: ProgressMap,
   bodyMetrics: BodyMetricEntry[],
   photoCheckIns: PhotoCheckIn[],
-  healthMetrics: HealthMetricEntry[] = [],
   now = new Date(),
 ): GamificationSnapshot {
   const sortedDates = Object.keys(progress).sort();
@@ -186,26 +160,18 @@ export function getGamificationSnapshot(
   const totalXp = sortedDates.reduce((sum, date) => sum + xpForEntry(progress[date]), 0) + bodyMetrics.length * 15 + photoCheckIns.length * 20;
   const { level, floorXp, nextXp } = levelFromXp(totalXp);
   const weekDates = plan.map((day) => day.dateIso);
-  const weeklyQuests = computeWeeklyQuests(weekDates, progress, plan, bodyMetrics, photoCheckIns, healthMetrics);
+  const weeklyQuests = computeWeeklyQuests(weekDates, progress, plan, bodyMetrics, photoCheckIns);
   const northStarQualitySessions = weeklyQuests.find((quest) => quest.id === 'quality-4')?.progress ?? 0;
-  const weeklyStepDays = weeklyQuests.find((quest) => quest.id === 'steps-4')?.progress ?? 0;
-  const weeklyRecoveryDays = weeklyQuests.find((quest) => quest.id === 'recovery-green-4')?.progress ?? 0;
+  const formFocusCount = weeklyQuests.find((quest) => quest.id === 'form-focus-8')?.progress ?? 0;
   const seasonStart = getCurrentSeasonStart(now);
   const seasonDates = sortedDates.filter((date) => date >= seasonStart);
-  const seasonHealth = healthMetrics.filter((entry) => entry.date >= seasonStart);
-  const seasonReadiness = seasonDates
-    .map((date) => getReadinessScore(healthMetrics, date))
-    .filter((entry): entry is NonNullable<ReturnType<typeof getReadinessScore>> => entry !== null);
-  const seasonReadinessBonus = seasonReadiness.length
-    ? seasonReadiness.reduce((sum, entry) => sum + (entry.band === 'green' ? 12 : entry.band === 'amber' ? 6 : 0), 0)
-    : 0;
   const seasonScore = Math.round(
     seasonDates.reduce((sum, date) => {
       const entry = progress[date];
       if (!entry?.sessionComplete) return sum;
       const qualityScore = entry.supplementsComplete && entry.recoveryComplete ? 80 : entry.recoveryComplete || entry.supplementsComplete ? 68 : 55;
       return sum + qualityScore * 1.2 + xpForEntry(entry) * 0.2;
-    }, 0) + seasonHealth.reduce((sum, entry) => sum + Math.min(30, Math.floor(entry.steps / 1000)), 0) + seasonReadinessBonus,
+    }, 0),
   );
   const tier = getSeasonTier(seasonScore);
   const streakDays = getTrainingStreak(progress);
@@ -215,9 +181,7 @@ export function getGamificationSnapshot(
   const badges = [
     streakDays >= 7 ? 'Week Streak' : '',
     northStarQualitySessions >= 4 ? 'Consistency Star' : '',
-    weeklyStepDays >= 4 ? 'Movement Engine' : '',
-    weeklyRecoveryDays >= 4 ? 'Recovery Reader' : '',
-    seasonReadiness.length >= 7 && seasonReadiness.every((entry) => entry.band !== 'red') ? 'Fatigue Governor' : '',
+    formFocusCount >= 8 ? 'Form Technician' : '',
     bodyMetrics.length >= 6 ? 'Data Operator' : '',
     photoCheckIns.length >= 3 ? 'Visual Auditor' : '',
     completedDates.length >= 30 ? 'Volume Grinder' : '',

@@ -49,6 +49,10 @@ export function getBodyMetricTrend(bodyMetrics: BodyMetricEntry[]) {
   return {
     weightDelta: Number((latest.weightLbs - first.weightLbs).toFixed(1)),
     waistDelta: Number((latest.waistInches - first.waistInches).toFixed(1)),
+    bodyFatDelta:
+      typeof latest.bodyFatPercent === 'number' && typeof first.bodyFatPercent === 'number'
+        ? Number((latest.bodyFatPercent - first.bodyFatPercent).toFixed(1))
+        : undefined,
     startDate: first.date,
     endDate: latest.date,
   };

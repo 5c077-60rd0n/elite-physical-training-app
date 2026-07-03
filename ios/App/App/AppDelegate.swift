@@ -47,9 +47,3 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 
 }
-
-class PhysicalClimbBridgeViewController: CAPBridgeViewController {
-    override open func capacitorDidLoad() {
-        bridge?.registerPluginInstance(PhysicalClimbHealthKitPlugin())
-    }
-}

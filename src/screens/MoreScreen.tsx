@@ -3,7 +3,6 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 
 const links = [
   { to: '/nutrition', label: 'Nutrition', description: 'Calorie targets, meal timing, fiber, and step guidance.' },
-  { to: '/health', label: 'Apple Health Bridge', description: 'Import Apple Health export data locally for step and weight history.' },
   { to: '/science', label: 'Science Engine', description: 'Programming rationale and evidence anchors.' },
   { to: '/backup', label: 'Backup', description: 'Export or restore all local progress, metrics, and photos.' },
   { to: '/settings', label: 'Settings', description: 'Profile, reminder timing, and program start date.' },

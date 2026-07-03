@@ -24,10 +24,6 @@
 	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
-	<key>NSHealthShareUsageDescription</key>
-	<string>Physical Climb reads Apple Health activity, recovery, and body-mass data to personalize training, nutrition, and readiness guidance.</string>
-	<key>NSHealthUpdateUsageDescription</key>
-	<string>Physical Climb may write future training markers or wellness notes back to Apple Health if you enable that integration in a native wrapper.</string>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>fetch</string>

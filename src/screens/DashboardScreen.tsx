@@ -4,9 +4,8 @@ import { Dashboard } from '../components/Dashboard';
 import { PageWrapper } from '../components/layout/PageWrapper';
 import { getBlockAverageComparisons, getCompletionRate, getMonthOverMonthSummaries } from '../lib/analytics';
 import { getGamificationSnapshot } from '../lib/gamification';
-import { getReadinessGuidance, getReadinessScore } from '../lib/health';
 import { buildProgramSnapshot, getSciencePrinciples } from '../lib/program';
-import type { BodyMetricEntry, DayPlan, HealthMetricEntry, PhotoCheckIn, ProgressEntry, ProgressMap, UserProfile } from '../types';
+import type { BodyMetricEntry, DayPlan, PhotoCheckIn, ProgressEntry, ProgressMap, UserProfile } from '../types';
 
 interface DashboardScreenProps {
   day: DayPlan;
@@ -15,10 +14,9 @@ interface DashboardScreenProps {
   profile: UserProfile;
   bodyMetrics: BodyMetricEntry[];
   photoCheckIns: PhotoCheckIn[];
-  healthMetrics: HealthMetricEntry[];
 }
 
-export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, photoCheckIns, healthMetrics }: DashboardScreenProps) {
+export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, photoCheckIns }: DashboardScreenProps) {
   const snapshot = buildProgramSnapshot(profile, day, bodyMetrics);
   const compactWeeklyTargets = [
     'Protect performance on the first two lifts.',
@@ -29,28 +27,13 @@ export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, pho
   const science = getSciencePrinciples()[0];
   const blockComparisons = getBlockAverageComparisons(bodyMetrics);
   const monthSummaries = getMonthOverMonthSummaries(bodyMetrics, progress);
-  const game = getGamificationSnapshot(plan, progress, bodyMetrics, photoCheckIns, healthMetrics);
-  const readiness = getReadinessScore(healthMetrics, day.dateIso);
-  const readinessGuidance = getReadinessGuidance(healthMetrics, day.dateIso);
-  const weeklyStepDays = plan.filter((item) => {
-    const health = healthMetrics.find((entry) => entry.date === item.dateIso);
-    return Boolean(health && health.steps >= 8000);
-  }).length;
-  const recentHealth = [...healthMetrics]
-    .sort((left, right) => left.date.localeCompare(right.date))
-    .slice(-7);
+  const game = getGamificationSnapshot(plan, progress, bodyMetrics, photoCheckIns);
   const weightBlockPoints = blockComparisons.map((block) => ({ label: block.label, value: block.weightAvg }));
   const waistBlockPoints = blockComparisons.map((block) => ({ label: block.label, value: block.waistAvg }));
-  const sleepPoints = recentHealth
-    .filter((entry) => typeof entry.sleepHours === 'number')
-    .map((entry) => ({ label: entry.date.slice(5), value: Number((entry.sleepHours ?? 0).toFixed(1)) }));
-  const restingHrPoints = recentHealth
-    .filter((entry) => typeof entry.restingHeartRate === 'number')
-    .map((entry) => ({ label: entry.date.slice(5), value: Number((entry.restingHeartRate ?? 0).toFixed(1)) }));
   const levelProgress = game.nextLevelXp > game.levelFloorXp
     ? ((game.totalXp - game.levelFloorXp) / (game.nextLevelXp - game.levelFloorXp)) * 100
     : 0;
-  const entry: ProgressEntry = progress[day.dateIso] ?? { sessionComplete: false, supplementsComplete: false, recoveryComplete: false, rpe: 7, notes: '' };
+  const entry: ProgressEntry = progress[day.dateIso] ?? { sessionComplete: false, supplementsComplete: false, recoveryComplete: false, rpe: 7, notes: '', exerciseLogs: {} };
 
   return (
     <PageWrapper
@@ -161,10 +144,6 @@ export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, pho
               <span className="card-kicker">Season score</span>
               <strong>{game.seasonScore}</strong>
             </article>
-            <article className="summary-box">
-              <span className="card-kicker">Step days</span>
-              <strong>{weeklyStepDays}</strong>
-            </article>
           </div>
           <div className="badge-row">
             {game.badges.length ? game.badges.map((badge) => <span key={badge} className="scan-tag">{badge}</span>) : <span className="panel-subtitle">Complete quality sessions and check-ins to unlock badges.</span>}
@@ -183,22 +162,15 @@ export function DashboardScreen({ day, plan, progress, profile, bodyMetrics, pho
         <section className="tracker-panel">
           <header className="tracker-header">
             <div>
-              <span className="panel-kicker">Recovery trends</span>
-              <h2 className="tracker-title">Sleep and resting HR</h2>
+              <span className="panel-kicker">Progression discipline</span>
+              <h2 className="tracker-title">Manual performance loop</h2>
             </div>
           </header>
-          <div className="chart-grid">
-            <SimpleTrendChart title="Sleep hours" points={sleepPoints} colorClass="cyan" unit=" h" />
-            <SimpleTrendChart title="Resting heart rate" points={restingHrPoints} colorClass="gold" unit=" bpm" />
-          </div>
-          {readiness && readinessGuidance ? (
-            <div className="summary-box">
-              <span className="card-kicker">Today&apos;s readiness</span>
-              <strong>{readiness.score}/100 ({readiness.band})</strong>
-              <p className="exercise-note">{readinessGuidance.trainingAdjustment}</p>
-              <p className="exercise-note">{readinessGuidance.recoveryFocus}</p>
-            </div>
-          ) : null}
+          <ul className="detail-list">
+            <li>Log every working lift with sets, reps, and load on Today.</li>
+            <li>Use form score to decide whether to increase load or repeat quality work.</li>
+            <li>Look for weekly volume consistency before pushing intensity.</li>
+          </ul>
         </section>
       </section>
 

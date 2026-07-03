@@ -1,13 +1,12 @@
 import { PageWrapper } from '../components/layout/PageWrapper';
-import { getReadinessGuidance, getReadinessScore } from '../lib/health';
 import { buildProgramSnapshot } from '../lib/program';
-import type { BodyMetricEntry, DayPlan, HealthMetricEntry, UserProfile } from '../types';
+import type { BodyMetricEntry, DayPlan, ProgressMap, UserProfile } from '../types';
 
 interface NutritionScreenProps {
   day: DayPlan;
   profile: UserProfile;
   bodyMetrics: BodyMetricEntry[];
-  healthMetrics: HealthMetricEntry[];
+  progress: ProgressMap;
 }
 
 function getStepRange(stepTarget: string) {
@@ -23,14 +22,13 @@ function getStepRange(stepTarget: string) {
   };
 }
 
-export function NutritionScreen({ day, profile, bodyMetrics, healthMetrics }: NutritionScreenProps) {
+export function NutritionScreen({ day, profile, bodyMetrics, progress }: NutritionScreenProps) {
   const snapshot = buildProgramSnapshot(profile, day, bodyMetrics);
   const nutrition = snapshot.nutritionTargets;
-  const todayHealth = healthMetrics.find((entry) => entry.date === day.dateIso) ?? null;
   const stepRange = nutrition ? getStepRange(nutrition.stepTarget) : null;
-  const remainingSteps = todayHealth && stepRange ? Math.max(0, stepRange.min - todayHealth.steps) : null;
-  const readiness = getReadinessScore(healthMetrics, day.dateIso);
-  const readinessGuidance = getReadinessGuidance(healthMetrics, day.dateIso);
+  const weeklyCompletedSessions = Object.entries(progress)
+    .filter(([date, entry]) => date >= day.dateIso.slice(0, 8) && entry.sessionComplete)
+    .length;
 
   return (
     <PageWrapper
@@ -64,14 +62,12 @@ export function NutritionScreen({ day, profile, bodyMetrics, healthMetrics }: Nu
                 <p className="exercise-note">Steps {nutrition.stepTarget} · Hydration {nutrition.hydration}</p>
               </article>
               <article className="exercise-card">
-                <span className="card-kicker">Imported step progress</span>
-                <h3 className="exercise-name">{todayHealth ? `${todayHealth.steps.toLocaleString()} steps` : 'No Apple Health steps for today'}</h3>
+                <span className="card-kicker">Activity consistency</span>
+                <h3 className="exercise-name">{weeklyCompletedSessions} logged sessions this week</h3>
                 <p className="exercise-note">
-                  {todayHealth && stepRange
-                    ? remainingSteps === 0
-                      ? 'Step target met. Keep the rest of the day easy and consistent.'
-                      : `${(remainingSteps ?? 0).toLocaleString()} steps left to hit the floor of today\'s target range.`
-                    : 'Import Apple Health data on the Health screen to compare real steps against today\'s target.'}
+                  {stepRange
+                    ? `Use manual movement tracking to stay near ${stepRange.min.toLocaleString()}-${stepRange.max.toLocaleString()} daily steps.`
+                    : 'Use manual movement tracking to keep non-exercise activity consistent.'}
                 </p>
               </article>
             </div>
@@ -104,23 +100,22 @@ export function NutritionScreen({ day, profile, bodyMetrics, healthMetrics }: Nu
               <strong>{nutrition.rationale}</strong>
             </div>
           ) : null}
-          {nutrition && todayHealth ? (
+          {nutrition ? (
             <div className="summary-box nutrition-box">
               <span className="card-kicker">Adherence signal</span>
               <strong>
-                {stepRange && todayHealth.steps >= stepRange.min
-                  ? 'Movement target is on pace, so the calorie target can stay modest and stable.'
-                  : 'If steps stay low, tighten food precision rather than forcing extra interval work.'}
+                {weeklyCompletedSessions >= 4
+                  ? 'Session consistency is solid. Keep calories steady and avoid unnecessary cuts.'
+                  : 'If training adherence is low, focus on consistency first before tightening calories.'}
               </strong>
             </div>
           ) : null}
-          {nutrition && readiness && readinessGuidance ? (
+          {nutrition ? (
             <div className="summary-box nutrition-box">
               <span className="card-kicker">Recovery-informed adjustment</span>
-              <strong>Readiness {readiness.score}/100 ({readiness.band})</strong>
-              <p className="exercise-note">{readinessGuidance.calorieAdjustment}</p>
-              <p className="exercise-note">{readinessGuidance.trainingAdjustment}</p>
-              <p className="exercise-note">{readinessGuidance.recoveryFocus}</p>
+              <strong>Use manual form scores and session notes as recovery guardrails.</strong>
+              <p className="exercise-note">If form quality trends down, hold load and keep calories near the top of range.</p>
+              <p className="exercise-note">If form quality is stable with completed sets/reps, progress load gradually.</p>
             </div>
           ) : null}
         </section>

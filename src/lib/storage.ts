@@ -1,11 +1,10 @@
 import { useEffect, useState } from 'react';
-import type { BodyMetricEntry, HealthMetricEntry, PhotoCheckIn, ProgressEntry, ProgressMap, UserProfile } from '../types';
+import type { BodyMetricEntry, PhotoCheckIn, ProgressEntry, ProgressMap, UserProfile } from '../types';
 
 const PROGRESS_STORAGE_KEY = 'elite-physical-training-progress';
 const PROFILE_STORAGE_KEY = 'elite-physical-training-profile';
 const BODY_METRICS_STORAGE_KEY = 'elite-physical-training-body-metrics';
 const PHOTO_CHECKINS_STORAGE_KEY = 'elite-physical-training-photo-checkins';
-const HEALTH_METRICS_STORAGE_KEY = 'elite-physical-training-health-metrics';
 
 export function createDefaultProfile(): UserProfile {
   return {
@@ -32,6 +31,7 @@ export function createDefaultProgressEntry(): ProgressEntry {
     recoveryComplete: false,
     rpe: 7,
     notes: '',
+    exerciseLogs: {},
   };
 }
 
@@ -42,7 +42,17 @@ function readProgress(): ProgressMap {
       return {};
     }
 
-    return JSON.parse(raw) as ProgressMap;
+    const parsed = JSON.parse(raw) as ProgressMap;
+    return Object.fromEntries(
+      Object.entries(parsed).map(([date, entry]) => [
+        date,
+        {
+          ...createDefaultProgressEntry(),
+          ...entry,
+          exerciseLogs: entry.exerciseLogs ?? {},
+        },
+      ]),
+    );
   } catch {
     return {};
   }
@@ -87,19 +97,6 @@ function readPhotoCheckIns(): PhotoCheckIn[] {
   }
 }
 
-function readHealthMetrics(): HealthMetricEntry[] {
-  try {
-    const raw = window.localStorage.getItem(HEALTH_METRICS_STORAGE_KEY);
-    if (!raw) {
-      return [];
-    }
-
-    return JSON.parse(raw) as HealthMetricEntry[];
-  } catch {
-    return [];
-  }
-}
-
 export function useStoredProgress() {
   const [progress, setProgress] = useState<ProgressMap>(() => readProgress());
 
@@ -138,14 +135,4 @@ export function useStoredPhotoCheckIns() {
   }, [photoCheckIns]);
 
   return [photoCheckIns, setPhotoCheckIns] as const;
-}
-
-export function useStoredHealthMetrics() {
-  const [healthMetrics, setHealthMetrics] = useState<HealthMetricEntry[]>(() => readHealthMetrics());
-
-  useEffect(() => {
-    window.localStorage.setItem(HEALTH_METRICS_STORAGE_KEY, JSON.stringify(healthMetrics));
-  }, [healthMetrics]);
-
-  return [healthMetrics, setHealthMetrics] as const;
 }

@@ -3,22 +3,12 @@ import { PageWrapper } from '../components/layout/PageWrapper';
 import { getNativeNotificationStatus, type NativeNotificationStatus } from '../native/nativeNotifications';
 import type { UserProfile } from '../types';
 
-type HealthSyncSource = 'xml-import' | 'native-foreground' | 'native-manual' | null;
-
-interface HealthSyncStatus {
-  lastSyncAt: string | null;
-  lastSource: HealthSyncSource;
-  importedDays: number;
-  lastError: string | null;
-}
-
 interface SettingsScreenProps {
   profile: UserProfile;
   onChange: (profile: UserProfile) => void;
-  healthSyncStatus: HealthSyncStatus;
 }
 
-export function SettingsScreen({ profile, onChange, healthSyncStatus }: SettingsScreenProps) {
+export function SettingsScreen({ profile, onChange }: SettingsScreenProps) {
   const [notificationStatus, setNotificationStatus] = useState<NativeNotificationStatus | null>(null);
   const [ageInput, setAgeInput] = useState(String(profile.age));
   const [heightInput, setHeightInput] = useState(String(profile.heightInches));
@@ -127,18 +117,10 @@ export function SettingsScreen({ profile, onChange, healthSyncStatus }: Settings
         ) : null}
 
         <div className="summary-box">
-          <span className="card-kicker">Health sync status</span>
-          <strong>{healthSyncStatus.lastSyncAt ? new Date(healthSyncStatus.lastSyncAt).toLocaleString() : 'No sync yet'}</strong>
-          <p className="exercise-note">Source: {healthSyncStatus.lastSource ?? 'n/a'} · Imported days: {healthSyncStatus.importedDays}</p>
-          <p className="exercise-note">Last error: {healthSyncStatus.lastError ?? 'none'}</p>
-        </div>
-
-        <div className="summary-box">
-          <span className="card-kicker">On-device HealthKit check</span>
-          <strong>Run from the Health screen on your iPhone build</strong>
-          <p className="exercise-note">1) Request HealthKit access</p>
-          <p className="exercise-note">2) Sync native HealthKit</p>
-          <p className="exercise-note">3) Run native diagnostics and confirm same-day read count</p>
+          <span className="card-kicker">Manual tracking mode</span>
+          <strong>Body metrics and workout progression stay fully local on this device.</strong>
+          <p className="exercise-note">Use Progress for weight, waist, and body-fat entries.</p>
+          <p className="exercise-note">Use Today to log sets, reps, load, and form quality.</p>
         </div>
 
         <div className="toggle-row">
